@@ -5,15 +5,18 @@ import com.example.backend.auth.dto.RegisterRequest;
 import com.example.backend.auth.model.User;
 import com.example.backend.auth.repository.UserRepository;
 
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
 public class AuthService {
 
     private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    public AuthService(UserRepository userRepository) {
+    public AuthService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     public User register(RegisterRequest request) {
@@ -24,7 +27,8 @@ public class AuthService {
 
         User user = new User();
         user.setEmail(request.getEmail());
-        user.setPasswordHash(request.getPassword()); // plain text
+        // Store a BCrypt hash instead of plain password
+        user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
         user.setFirstName(request.getFirstName());
         user.setMiddleName(request.getMiddleName());
         user.setLastName(request.getLastName());
@@ -38,7 +42,8 @@ public class AuthService {
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        if (!request.getPassword().equals(user.getPasswordHash())) {
+        // Compare raw password with stored hash
+        if (!passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {
             throw new RuntimeException("Invalid password");
         }
 
