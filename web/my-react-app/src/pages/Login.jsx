@@ -60,6 +60,13 @@ const Login = () => {
         <button type="submit" disabled={loading}>
           {loading ? "Logging in..." : "Login"}
         </button>
+        <button
+          type="button"
+          className="link-button"
+          onClick={() => navigate("/register")}
+        >
+          Don't have an account? Register
+        </button>
       </form>
       {error && <p className="error-text">{error}</p>}
       {message && <p className="success-text">{message}</p>}
