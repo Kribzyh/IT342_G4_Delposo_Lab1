@@ -1,8 +1,8 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { register } from "../services/api";
 
-// Register fields are based on RegisterRequest:
-// email, password, firstName, middleName, lastName, role
+
 const Register = () => {
   const [firstName, setFirstName] = useState("");
   const [middleName, setMiddleName] = useState("");
@@ -13,6 +13,7 @@ const Register = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -32,9 +33,11 @@ const Register = () => {
     try {
       const res = await register(payload);
 
-      // Backend returns the created User object.
-      if (res && res.userID) {
-        setMessage("Registration successful.");
+      // On successful registration, treat response as logged-in user
+      if (res && (res.userID || res.email)) {
+        localStorage.setItem("user", JSON.stringify(res));
+        setMessage("Registration successful. Redirecting...");
+        navigate("/dashboard");
       } else {
         setMessage("Registration completed.");
       }

@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { login } from "../services/api";
 
 const Login = () => {
@@ -7,6 +8,7 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -17,10 +19,14 @@ const Login = () => {
     try {
       const res = await login({ email, password });
 
-      if (res && res.message) {
-        setMessage(res.message);
+      // Treat any returned user object as a successful login.
+      if (res && (res.userID || res.email)) {
+        // Persist user so ProtectedRoute can see that we're logged in
+        localStorage.setItem("user", JSON.stringify(res));
+        setMessage("Login successful. Redirecting...");
+        navigate("/dashboard");
       } else {
-        setMessage("Login successful.");
+        setError("Login failed. Please check your credentials.");
       }
     } catch (err) {
       setError("Login failed. Please try again.");
